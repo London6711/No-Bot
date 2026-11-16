@@ -49,7 +49,8 @@ CONFIG = {
     "limit_price_offset": 0.005,       # place limit 0.5¢ below mid to be maker
 
     # Position sizing
-    "order_size_usdc": 5.0,            # small for testing; raise carefully
+    "starting_capital_usdc": 50.0,
+    "order_size_usdc": 50.0,           # starting capital per order
     "max_open_positions": 20,
     "max_capital_per_market_pct": 0.05,  # never >5% of bankroll in one market
 
