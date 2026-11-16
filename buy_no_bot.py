@@ -227,6 +227,10 @@ def run_once(client: Optional[ClobClient], paper: PaperPortfolio):
     markets = fetch_active_markets()
     log.info("Fetched %d active markets.", len(markets))
 
+    # Enforce max order size as a pct of starting capital (5% cap).
+    max_order_size = CONFIG["starting_capital_usdc"] * CONFIG["max_capital_per_market_pct"]
+    order_size_usdc = min(CONFIG["order_size_usdc"], max_order_size)
+
     candidates = 0
     for m in markets:
         if not is_binary_yes_no(m):
@@ -298,13 +302,13 @@ def run_once(client: Optional[ClobClient], paper: PaperPortfolio):
                 place_buy_no_order(
                     client=client,
                     token_id=token_id,
-                    size_usdc=CONFIG["order_size_usdc"],
+                    size_usdc=order_size_usdc,
                     limit_price=limit_price,
                 )
             except Exception as e:
                 log.error("Live order failed for %s: %s", token_id[:12], e)
         else:
-            shares = round(CONFIG["order_size_usdc"] / limit_price, 2)
+            shares = round(order_size_usdc / limit_price, 2)
             paper.record_fill(token_id, shares, limit_price)
 
     log.info("Scan complete. %d candidates acted on.", candidates)
