@@ -7,6 +7,8 @@ import os
 import time
 import json
 import logging
+import argparse
+import sys
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -22,6 +24,15 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 log = logging.getLogger("buy_no_bot")
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Polymarket Buy NO Bot")
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run a single scan cycle in paper mode and exit (no live orders)",
+    )
+    return parser.parse_args()
 
 # ── Configuration (non-secret, safe to commit) ─────────────────────────────
 CONFIG = {
@@ -315,7 +326,17 @@ def run_once(client: Optional[ClobClient], paper: PaperPortfolio):
 
 # ── Entry point ────────────────────────────────────────────────────────────
 def main():
+    args = parse_args()
     live = is_live_mode()
+
+    if args.self_test:
+        log.info("Running self-test (single paper scan)...")
+        paper = PaperPortfolio()
+        client = build_client(authenticated=False)
+        run_once(client, paper)
+        log.info("Self-test complete.")
+        return
+
     log.info("Starting Buy-NO bot | LIVE=%s", live)
 
     paper = PaperPortfolio()
